@@ -1,0 +1,173 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define MAX_TERR 5
+
+typedef struct {
+    char nome[30];
+    char cor[20];
+    int tropas;
+} Territorio;
+
+typedef struct {
+    int tipo;
+} Missao;
+
+void inicializarTerritorios(Territorio *t){
+    
+    const char *nomes[MAX_TERR] = {
+        "Brasil","Argentina","Chile","Peru","Colombia"
+    };
+
+    const char *cores[MAX_TERR] = {
+        "Verde","Azul","Vermelho","Amarelo","Preto"
+    };
+
+    for(int i=0;i<MAX_TERR;i++){
+        snprintf(t[i].nome,30,"%s",nomes[i]);
+        snprintf(t[i].cor,20,"%s",cores[i]);
+        t[i].tropas = rand()%5 + 1;
+    }
+}
+
+void mostrarMapa(const Territorio *t){
+
+    printf("\n===== MAPA =====\n");
+
+    for(int i=0;i<MAX_TERR;i++){
+        printf("%d - %s | Exercito: %s | Tropas: %d\n",
+        i+1,t[i].nome,t[i].cor,t[i].tropas);
+    }
+}
+
+void atacar(Territorio *t){
+
+    int a,d;
+
+    printf("\nTerritorio atacante: ");
+    scanf("%d",&a);
+
+    printf("Territorio defensor: ");
+    scanf("%d",&d);
+
+    if(a<1 || a>MAX_TERR || d<1 || d>MAX_TERR || a==d){
+        printf("Escolha invalida!\n");
+        return;
+    }
+
+    int dadoAtaque = rand()%6 + 1;
+    int dadoDefesa = rand()%6 + 1;
+
+    printf("Ataque: %d | Defesa: %d\n",dadoAtaque,dadoDefesa);
+
+    if(dadoAtaque >= dadoDefesa){
+        printf("Atacante venceu!\n");
+
+        t[d-1].tropas--;
+
+        if(t[d-1].tropas <=0){
+            printf("Territorio conquistado!\n");
+
+            t[d-1].tropas = 1;
+            t[a-1].tropas--;
+
+            snprintf(t[d-1].cor,20,"%s",t[a-1].cor);
+        }
+
+    }else{
+        printf("Defensor venceu!\n");
+        t[a-1].tropas--;
+    }
+}
+
+void atribuirMissao(Missao *m){
+
+    m->tipo = rand()%2;
+
+    printf("\nMissao recebida!\n");
+}
+
+int verificarMissao(const Territorio *t,const Missao *m){
+
+    if(m->tipo==0){
+
+        for(int i=0;i<MAX_TERR;i++){
+            if(strcmp(t[i].cor,"Verde")==0)
+                return 0;
+        }
+
+        printf("\nMissao cumprida: destruir exercito Verde!\n");
+        return 1;
+    }
+
+    if(m->tipo==1){
+
+        int cont=0;
+
+        for(int i=0;i<MAX_TERR;i++){
+            if(strcmp(t[i].cor,"Azul")==0)
+                cont++;
+        }
+
+        if(cont>=3){
+            printf("\nMissao cumprida: conquistar 3 territorios!\n");
+            return 1;
+        }
+    }
+
+    printf("\nMissao ainda nao cumprida.\n");
+    return 0;
+}
+
+void menu(){
+
+    printf("\n=== MENU ===\n");
+    printf("1 - Atacar\n");
+    printf("2 - Verificar Missao\n");
+    printf("0 - Sair\n");
+}
+
+int main(){
+
+    srand(time(NULL));
+
+    Territorio *territorios = calloc(MAX_TERR,sizeof(Territorio));
+
+    Missao missao;
+
+    inicializarTerritorios(territorios);
+
+    atribuirMissao(&missao);
+
+    int opcao;
+
+    do{
+
+        mostrarMapa(territorios);
+
+        menu();
+
+        printf("Opcao: ");
+        scanf("%d",&opcao);
+
+        switch(opcao){
+
+            case 1:
+                atacar(territorios);
+                break;
+
+            case 2:
+                if(verificarMissao(territorios,&missao)){
+                    printf("\nVOCE VENCEU O JOGO!\n");
+                    opcao=0;
+                }
+                break;
+        }
+
+    }while(opcao!=0);
+
+    free(territorios);
+
+    return 0;
+}
