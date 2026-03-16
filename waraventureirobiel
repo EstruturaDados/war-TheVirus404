@@ -1,0 +1,91 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+typedef struct {
+    char nome[50];
+    char cor[30];
+    int tropas;
+} Territorio;
+
+void mostrarMapa(Territorio *t, int n){
+    printf("\n--- MAPA ATUAL ---\n");
+    for(int i=0;i<n;i++){
+        printf("%d - %s | Exército: %s | Tropas: %d\n",
+        i+1, t[i].nome, t[i].cor, t[i].tropas);
+    }
+}
+
+void batalha(Territorio *atacante, Territorio *defensor){
+
+    int dadoAtaque = rand()%6 + 1;
+    int dadoDefesa = rand()%6 + 1;
+
+    printf("\nDado do ataque: %d\n", dadoAtaque);
+    printf("Dado da defesa: %d\n", dadoDefesa);
+
+    if(dadoAtaque >= dadoDefesa){
+        printf("Atacante venceu!\n");
+        defensor->tropas--;
+
+        if(defensor->tropas <= 0){
+            printf("Território conquistado!\n");
+
+            defensor->tropas = 1;
+            atacante->tropas--;
+
+            snprintf(defensor->cor, sizeof(defensor->cor), "%s", atacante->cor);
+        }
+
+    }else{
+        printf("Defensor venceu!\n");
+        atacante->tropas--;
+    }
+}
+
+int main(){
+
+    int n = 5;
+
+    Territorio *territorios = calloc(n, sizeof(Territorio));
+
+    srand(time(NULL));
+
+    printf("Cadastro de Territorios\n");
+
+    for(int i=0;i<n;i++){
+        printf("\nNome do territorio %d: ", i+1);
+        fgets(territorios[i].nome,50,stdin);
+
+        printf("Cor do exercito: ");
+        fgets(territorios[i].cor,30,stdin);
+
+        printf("Numero de tropas: ");
+        scanf("%d",&territorios[i].tropas);
+        getchar();
+    }
+
+    int atacante, defensor;
+
+    while(1){
+
+        mostrarMapa(territorios,n);
+
+        printf("\nEscolha o territorio atacante (1-5): ");
+        scanf("%d",&atacante);
+
+        printf("Escolha o territorio defensor (1-5): ");
+        scanf("%d",&defensor);
+
+        if(atacante <1 || atacante>5 || defensor<1 || defensor>5 || atacante==defensor){
+            printf("Escolha invalida!\n");
+            continue;
+        }
+
+        batalha(&territorios[atacante-1], &territorios[defensor-1]);
+    }
+
+    free(territorios);
+
+    return 0;
+}
